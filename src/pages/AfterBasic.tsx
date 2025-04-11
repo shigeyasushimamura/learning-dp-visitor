@@ -55,9 +55,7 @@ export default function BattleDemo() {
   return (
     <div className="p-6 max-w-3xl mx-auto bg-gradient-to-b from-green-50 to-blue-100 rounded-xl shadow-lg space-y-6">
       <header className="flex flex-col items-center space-y-1">
-        <h1 className="text-2xl font-extrabold text-blue-800">
-          ⚔️ バトルアリーナ
-        </h1>
+        <h1 className="text-2xl font-extrabold text-blue-800">⚔️ 模擬戦闘</h1>
         <p className="text-sm text-gray-600">勇者 vs スライム</p>
       </header>
 

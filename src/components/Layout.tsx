@@ -4,8 +4,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-blue-600 text-white px-6 py-4 shadow-md">
-        {/* <nav className="flex flex-wrap gap-6 text-lg font-semibold"> */}
-        <nav className="bg-red-500 text-white p-4 flex flex-wrap gap-6 text-lg font-semibold">
+        <nav className="flex flex-wrap gap-6 text-lg font-semibold">
           <Link to="/" className="hover:underline">
             Before
           </Link>
