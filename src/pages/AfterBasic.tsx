@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Character, Visitor, Extension } from "../lib/type";
+import { Character, Visitor } from "../lib/type";
 import { BattleManager } from "../lib/BattleManager";
 
-// ------------------- Initial Data -------------------
 const defaultPlayer: Character = {
   name: "勇者",
   hp: 40,
@@ -19,7 +18,6 @@ const defaultEnemy: Character = {
   state: "idle",
 };
 
-// ------------------- Visitor Implementation -------------------
 const BattleVisitor: Visitor = {
   visitAttack: (attacker, defender) => {
     const damage = Math.floor(Math.random() * 8) + 3;
@@ -36,14 +34,12 @@ const BattleVisitor: Visitor = {
   },
 };
 
-// ------------------- React Component -------------------
 export default function BattleDemo() {
   const [player, setPlayer] = useState<Character>({ ...defaultPlayer });
   const [enemy, setEnemy] = useState<Character>({ ...defaultEnemy });
   const [log, setLog] = useState<string[]>([]);
 
   const appendLog = (entry: string) => setLog((l) => [entry, ...l]);
-
   const manager = new BattleManager(player, enemy, BattleVisitor);
 
   const handleAction = (action: Character["state"]) => {
@@ -57,24 +53,44 @@ export default function BattleDemo() {
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto space-y-4">
-      <h1 className="text-xl font-bold text-center">🎮 バトルデモ</h1>
-      <div className="grid grid-cols-2 gap-4">
-        <CharacterCard character={player} />
+    <div className="p-6 max-w-3xl mx-auto bg-gradient-to-b from-green-50 to-blue-100 rounded-xl shadow-lg space-y-6">
+      <header className="flex flex-col items-center space-y-1">
+        <h1 className="text-2xl font-extrabold text-blue-800">
+          ⚔️ バトルアリーナ
+        </h1>
+        <p className="text-sm text-gray-600">勇者 vs スライム</p>
+      </header>
+
+      <div className="grid grid-cols-2 gap-6">
+        <CharacterCard character={player} isPlayer />
         <CharacterCard character={enemy} />
       </div>
 
-      <div className="flex justify-center space-x-2">
-        <ActionButton label="攻撃" onClick={() => handleAction("attack")} />
-        <ActionButton label="防御" onClick={() => handleAction("defend")} />
-        <ActionButton label="回復" onClick={() => handleAction("heal")} />
+      <div className="flex justify-center gap-4">
+        <ActionButton
+          label="攻撃"
+          color="red"
+          onClick={() => handleAction("attack")}
+        />
+        <ActionButton
+          label="防御"
+          color="yellow"
+          onClick={() => handleAction("defend")}
+        />
+        <ActionButton
+          label="回復"
+          color="green"
+          onClick={() => handleAction("heal")}
+        />
       </div>
 
-      <div className="bg-gray-100 p-3 rounded shadow">
-        <h2 className="font-semibold mb-2">ログ:</h2>
-        <div className="space-y-1 text-sm h-40 overflow-y-auto">
+      <div className="bg-white border border-blue-200 p-4 rounded-md shadow-inner h-48 overflow-y-auto">
+        <h2 className="font-semibold mb-2 text-blue-700">🎙️ バトルログ</h2>
+        <div className="space-y-1 text-sm text-gray-700">
           {log.map((entry, idx) => (
-            <div key={idx}>▶ {entry}</div>
+            <div key={idx} className="before:content-['▶'] before:mr-1">
+              {entry}
+            </div>
           ))}
         </div>
       </div>
@@ -82,14 +98,29 @@ export default function BattleDemo() {
   );
 }
 
-function CharacterCard({ character }: { character: Character }) {
+function CharacterCard({
+  character,
+  isPlayer = false,
+}: {
+  character: Character;
+  isPlayer?: boolean;
+}) {
   return (
-    <div className="p-4 rounded border shadow bg-white">
-      <h3 className="font-bold text-lg">{character.name}</h3>
-      <p>
-        HP: {character.hp} / {character.maxHp}
-      </p>
-      <p>状態: {character.state}</p>
+    <div
+      className={`p-4 rounded-xl border shadow-lg ${
+        isPlayer ? "bg-yellow-50" : "bg-white"
+      }`}
+    >
+      <h3 className="font-bold text-lg text-center text-gray-800">
+        {character.name}
+      </h3>
+      <div className="text-sm text-gray-600 mt-2">
+        <p>
+          HP: <span className="font-semibold text-red-600">{character.hp}</span>{" "}
+          / {character.maxHp}
+        </p>
+        <p>状態: {character.state}</p>
+      </div>
     </div>
   );
 }
@@ -97,15 +128,22 @@ function CharacterCard({ character }: { character: Character }) {
 function ActionButton({
   label,
   onClick,
+  color,
 }: {
   label: string;
   onClick: () => void;
+  color: "red" | "yellow" | "green";
 }) {
+  const base =
+    "px-6 py-2 font-semibold rounded-full text-white text-sm shadow-md hover:scale-105 transition-transform";
+  const colorMap = {
+    red: "bg-red-500 hover:bg-red-600",
+    yellow: "bg-yellow-500 hover:bg-yellow-600",
+    green: "bg-green-500 hover:bg-green-600",
+  };
+
   return (
-    <button
-      onClick={onClick}
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-    >
+    <button onClick={onClick} className={`${base} ${colorMap[color]}`}>
       {label}
     </button>
   );
