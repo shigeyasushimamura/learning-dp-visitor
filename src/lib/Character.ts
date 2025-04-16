@@ -7,10 +7,10 @@ export interface ICharacter {
   setContext(context: CharacterContext): void;
 }
 
-export type Visitor = {
-  visitAttack: (attacker: ICharacter, defender: ICharacter) => string;
-  visitDefend: (character: ICharacter) => string;
-};
+export interface Visitor {
+  visitAttack(attacker: ICharacter, defender: ICharacter): string;
+  visitDefend(character: ICharacter): string;
+}
 
 export class Character implements Character {
   constructor(

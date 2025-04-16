@@ -1,6 +1,6 @@
 // BattleDemo.tsx
 import { useState } from "react";
-import { Visitor, Character } from "../lib/Character";
+import { Visitor, Character, ICharacter } from "../lib/Character";
 import {
   CharacterContext,
   CombatCharacterModule,
@@ -19,16 +19,16 @@ const enemyContext = new CharacterContext();
 enemyContext.addRole("combat", new CombatCharacterModule());
 enemy.setContext(enemyContext);
 
-const BattleVisitor: Visitor = {
-  visitAttack: (attacker, defender) => {
+export class BattleVisitor implements Visitor {
+  visitAttack(attacker: ICharacter, defender: ICharacter) {
     const damage = Math.floor(Math.random() * 8) + 3;
     defender.hp = Math.max(defender.hp - damage, 0);
     return `${attacker.name}の攻撃！ ${defender.name}に${damage}のダメージ！`;
-  },
-  visitDefend: (character) => {
+  }
+  visitDefend(character: ICharacter) {
     return `${character.name}は防御の体勢に入った。次のダメージを軽減！`;
-  },
-};
+  }
+}
 
 export default function BattleDemo() {
   const [playerState, setPlayer] = useState<Character>(player);
@@ -36,7 +36,11 @@ export default function BattleDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   const appendLog = (entry: string) => setLog((l) => [entry, ...l]);
-  const manager = new BattleManager(playerState, enemyState, BattleVisitor);
+  const manager = new BattleManager(
+    playerState,
+    enemyState,
+    new BattleVisitor()
+  );
 
   const handleAction = (action: ICombatRole["state"], skillName?: string) => {
     const playerMessage = manager.act(
