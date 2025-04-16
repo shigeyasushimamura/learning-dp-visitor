@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Character, Visitor } from "../lib/type";
 import { BattleManager } from "../lib/BattleManager";
+import { healingSkill } from "../lib/skill";
 
 const defaultPlayer: Character = {
   name: "勇者",
   hp: 40,
   maxHp: 40,
   extensions: [],
+  skills: [healingSkill],
   state: "idle",
 };
 
@@ -15,6 +17,7 @@ const defaultEnemy: Character = {
   hp: 30,
   maxHp: 30,
   extensions: [],
+  skills: [],
   state: "idle",
 };
 
@@ -27,11 +30,6 @@ const BattleVisitor: Visitor = {
   visitDefend: (character) => {
     return `${character.name}は防御の体勢に入った。次のダメージを軽減！`;
   },
-  visitHeal: (character) => {
-    const heal = Math.floor(Math.random() * 5) + 5;
-    character.hp = Math.min(character.hp + heal, character.maxHp);
-    return `${character.name}は回復した！ HPが${heal}回復！`;
-  },
 };
 
 export default function BattleDemo() {
@@ -42,8 +40,8 @@ export default function BattleDemo() {
   const appendLog = (entry: string) => setLog((l) => [entry, ...l]);
   const manager = new BattleManager(player, enemy, BattleVisitor);
 
-  const handleAction = (action: Character["state"]) => {
-    const playerMessage = manager.act(action);
+  const handleAction = (action: Character["state"], skillName?: string) => {
+    const playerMessage = manager.act(action, skillName);
     const enemyMessage = manager.enemyTurn();
 
     setPlayer({ ...manager.player });
@@ -78,7 +76,7 @@ export default function BattleDemo() {
         <ActionButton
           label="回復"
           color="green"
-          onClick={() => handleAction("heal")}
+          onClick={() => handleAction("useSkill", "ヒール")}
         />
       </div>
 
@@ -117,7 +115,7 @@ function CharacterCard({
           HP: <span className="font-semibold text-red-600">{character.hp}</span>{" "}
           / {character.maxHp}
         </p>
-        <p>状態: {character.state}</p>
+        <p>アクション: {character.state}</p>
       </div>
     </div>
   );
