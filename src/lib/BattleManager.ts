@@ -1,16 +1,16 @@
-import { Character, Visitor } from "./type";
+import { Visitor, Combatant } from "./type";
 
 export class BattleManager {
   constructor(
-    public player: Character,
-    public enemy: Character,
+    public player: Combatant,
+    public enemy: Combatant,
     private visitor: Visitor
   ) {}
 
   act(
-    actor: Character,
-    target: Character,
-    action: Character["state"],
+    actor: Combatant,
+    target: Combatant,
+    action: Combatant["state"],
     skillName?: string
   ): string {
     actor.state = action;
@@ -20,7 +20,7 @@ export class BattleManager {
       case "defend":
         return this.visitor.visitDefend(actor);
       case "useSkill": {
-        const skill = actor.skills?.find((s) => s.name === skillName);
+        const skill = actor.getSkills().find((s) => s.name === skillName);
         if (!skill) return `${actor.name}はスキル「${skillName}」を知らない！`;
         return skill.execute(actor, target);
       }
@@ -30,7 +30,7 @@ export class BattleManager {
   }
 
   enemyTurn(): string {
-    const actions: Character["state"][] = ["attack", "defend"];
+    const actions: Combatant["state"][] = ["attack", "defend"];
     const action = actions[Math.floor(Math.random() * actions.length)];
     return this.act(this.enemy, this.player, action);
   }
