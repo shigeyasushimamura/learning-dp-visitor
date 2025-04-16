@@ -1,9 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { BattleManager } from "./BattleManager";
-import { Visitor, ISkill } from "./type";
-import { CombatCharacter } from "../pages/AfterBasic";
+import { Visitor, ISkill, Character } from "./Character";
+import { CharacterContext, CombatCharacterModule } from "./characterContext";
 
-// ------------------- テスト定数 -------------------
 const INITIAL_PLAYER_HP = 40;
 const INITIAL_ENEMY_HP = 30;
 const MOCK_ATTACK_DAMAGE = 5;
@@ -11,7 +10,6 @@ const HEAL_AMOUNT = 10;
 const SKILL_NAME_HEAL = "ヒール";
 const SKILL_NAME_UNKNOWN = "ファイア";
 
-// ------------------- モックスキル -------------------
 const TestHealingSkill: ISkill = {
   name: SKILL_NAME_HEAL,
   execute: (user) => {
@@ -20,20 +18,30 @@ const TestHealingSkill: ISkill = {
   },
 };
 
-// ------------------- キャラクター生成 -------------------
-const createTestPlayer = () =>
-  new CombatCharacter(
+const createTestPlayer = (): Character => {
+  const player = new Character(
     "テスト勇者",
     INITIAL_PLAYER_HP,
-    INITIAL_PLAYER_HP,
-    [],
-    [TestHealingSkill]
+    INITIAL_PLAYER_HP
   );
+  const ctx = new CharacterContext();
+  ctx.addRole("combat", new CombatCharacterModule([], [TestHealingSkill]));
+  player.setContext(ctx);
+  return player;
+};
 
-const createTestEnemy = () =>
-  new CombatCharacter("テストスライム", INITIAL_ENEMY_HP, INITIAL_ENEMY_HP);
+const createTestEnemy = (): Character => {
+  const enemy = new Character(
+    "テストスライム",
+    INITIAL_ENEMY_HP,
+    INITIAL_ENEMY_HP
+  );
+  const ctx = new CharacterContext();
+  ctx.addRole("combat", new CombatCharacterModule());
+  enemy.setContext(ctx);
+  return enemy;
+};
 
-// ------------------- モックVisitor -------------------
 const MockVisitor: Visitor = {
   visitAttack: (a, d) => {
     const damage = MOCK_ATTACK_DAMAGE;
@@ -43,7 +51,6 @@ const MockVisitor: Visitor = {
   visitDefend: (c) => `${c.name}は防御の体勢に入った。`,
 };
 
-// ------------------- テスト -------------------
 describe("BattleManager", () => {
   it("攻撃で敵HPが減少する", () => {
     const manager = new BattleManager(
@@ -54,7 +61,10 @@ describe("BattleManager", () => {
     manager.act(manager.player, manager.enemy, "attack");
 
     expect(manager.enemy.hp).toBe(INITIAL_ENEMY_HP - MOCK_ATTACK_DAMAGE);
-    expect(manager.player.state).toBe("attack");
+    const playerCombat = manager.player
+      .getContext()
+      ?.getRole<ICombatRole>("combat");
+    expect(playerCombat?.state).toBe("attack");
   });
 
   it("スキル『ヒール』でHPが回復する", () => {
@@ -82,7 +92,10 @@ describe("BattleManager", () => {
       MockVisitor
     );
     manager.act(manager.player, manager.enemy, "defend");
-    expect(manager.player.state).toBe("defend");
+    const playerCombat = manager.player
+      .getContext()
+      ?.getRole<ICombatRole>("combat");
+    expect(playerCombat?.state).toBe("defend");
   });
 
   describe("enemyTurn()", () => {
@@ -95,7 +108,10 @@ describe("BattleManager", () => {
       );
       manager.enemyTurn();
 
-      expect(manager.enemy.state).toBe("attack");
+      const enemyCombat = manager.enemy
+        .getContext()
+        ?.getRole<ICombatRole>("combat");
+      expect(enemyCombat?.state).toBe("attack");
       expect(manager.player.hp).toBe(INITIAL_PLAYER_HP - MOCK_ATTACK_DAMAGE);
 
       vi.restoreAllMocks();
@@ -111,7 +127,10 @@ describe("BattleManager", () => {
       const beforeHp = manager.player.hp;
       manager.enemyTurn();
 
-      expect(manager.enemy.state).toBe("defend");
+      const enemyCombat = manager.enemy
+        .getContext()
+        ?.getRole<ICombatRole>("combat");
+      expect(enemyCombat?.state).toBe("defend");
       expect(manager.player.hp).toBe(beforeHp);
 
       vi.restoreAllMocks();

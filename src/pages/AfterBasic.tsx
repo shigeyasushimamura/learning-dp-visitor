@@ -1,56 +1,23 @@
+// BattleDemo.tsx
 import { useState } from "react";
+import { Visitor, Character } from "../lib/Character";
 import {
-  Character,
-  Visitor,
-  Combatant,
-  ISkill,
-  ICombatStatusEffect,
-} from "../lib/type";
+  CharacterContext,
+  CombatCharacterModule,
+  ICombatRole,
+} from "../lib/characterContext";
 import { BattleManager } from "../lib/BattleManager";
 import { healingSkill } from "../lib/skill";
 
-export class CombatCharacter implements Combatant {
-  public state: "idle" | "attack" | "defend" | "useSkill" = "idle";
-  private statusEffects: ICombatStatusEffect[] = [];
-  private skills: ISkill[] = [];
+const player = new Character("勇者", 40, 40);
+const playerContext = new CharacterContext();
+playerContext.addRole("combat", new CombatCharacterModule([], [healingSkill]));
+player.setContext(playerContext);
 
-  constructor(
-    public name: string,
-    public hp: number,
-    public maxHp: number,
-    effects: ICombatStatusEffect[] = [],
-    skills: ISkill[] = []
-  ) {
-    this.statusEffects = effects;
-    this.skills = skills;
-  }
-
-  getStatusEffects(): ICombatStatusEffect[] {
-    return this.statusEffects;
-  }
-
-  addStatusEffect(effect: ICombatStatusEffect): void {
-    this.statusEffects.push(effect);
-  }
-
-  getSkills(): ISkill[] {
-    return this.skills;
-  }
-
-  addSkill(skill: ISkill): void {
-    this.skills.push(skill);
-  }
-}
-
-export const defaultPlayer = new CombatCharacter(
-  "勇者",
-  40,
-  40,
-  [],
-  [healingSkill as ISkill]
-);
-
-export const defaultEnemy = new CombatCharacter("スライム", 30, 30);
+const enemy = new Character("スライム", 30, 30);
+const enemyContext = new CharacterContext();
+enemyContext.addRole("combat", new CombatCharacterModule());
+enemy.setContext(enemyContext);
 
 const BattleVisitor: Visitor = {
   visitAttack: (attacker, defender) => {
@@ -64,14 +31,14 @@ const BattleVisitor: Visitor = {
 };
 
 export default function BattleDemo() {
-  const [player, setPlayer] = useState<Combatant>(defaultPlayer);
-  const [enemy, setEnemy] = useState<Combatant>(defaultEnemy);
+  const [playerState, setPlayer] = useState<Character>(player);
+  const [enemyState, setEnemy] = useState<Character>(enemy);
   const [log, setLog] = useState<string[]>([]);
 
   const appendLog = (entry: string) => setLog((l) => [entry, ...l]);
-  const manager = new BattleManager(player, enemy, BattleVisitor);
+  const manager = new BattleManager(playerState, enemyState, BattleVisitor);
 
-  const handleAction = (action: Combatant["state"], skillName?: string) => {
+  const handleAction = (action: ICombatRole["state"], skillName?: string) => {
     const playerMessage = manager.act(
       manager.player,
       manager.enemy,
@@ -94,8 +61,8 @@ export default function BattleDemo() {
       </header>
 
       <div className="grid grid-cols-2 gap-6">
-        <CharacterCard character={player} isPlayer />
-        <CharacterCard character={enemy} />
+        <CharacterCard character={playerState} isPlayer />
+        <CharacterCard character={enemyState} />
       </div>
 
       <div className="flex justify-center gap-4">
@@ -134,9 +101,12 @@ function CharacterCard({
   character,
   isPlayer = false,
 }: {
-  character: Combatant;
+  character: Character;
   isPlayer?: boolean;
 }) {
+  const context = character.getContext();
+  const combat = context?.getRole<ICombatRole>("combat");
+
   return (
     <div
       className={`p-4 rounded-xl border shadow-lg ${
@@ -151,7 +121,7 @@ function CharacterCard({
           HP: <span className="font-semibold text-red-600">{character.hp}</span>{" "}
           / {character.maxHp}
         </p>
-        <p>アクション: {character.state}</p>
+        <p>アクション: {combat?.state}</p>
       </div>
     </div>
   );
