@@ -41,7 +41,12 @@ export default function BattleDemo() {
   const manager = new BattleManager(player, enemy, BattleVisitor);
 
   const handleAction = (action: Character["state"], skillName?: string) => {
-    const playerMessage = manager.act(action, skillName);
+    const playerMessage = manager.act(
+      manager.player,
+      manager.enemy,
+      action,
+      skillName
+    );
     const enemyMessage = manager.enemyTurn();
 
     setPlayer({ ...manager.player });

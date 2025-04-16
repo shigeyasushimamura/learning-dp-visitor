@@ -7,18 +7,22 @@ export class BattleManager {
     private visitor: Visitor
   ) {}
 
-  act(action: Character["state"], skillName?: string): string {
-    this.player.state = action;
+  act(
+    actor: Character,
+    target: Character,
+    action: Character["state"],
+    skillName?: string
+  ): string {
+    actor.state = action;
     switch (action) {
       case "attack":
-        return this.visitor.visitAttack(this.player, this.enemy);
+        return this.visitor.visitAttack(actor, target);
       case "defend":
-        return this.visitor.visitDefend(this.player);
+        return this.visitor.visitDefend(actor);
       case "useSkill": {
-        const skill = this.player.skills.find((s) => s.name === skillName);
-        if (!skill)
-          return `${this.player.name}はスキル「${skillName}」を知らない！`;
-        return skill.execute(this.player, this.enemy);
+        const skill = actor.skills?.find((s) => s.name === skillName);
+        if (!skill) return `${actor.name}はスキル「${skillName}」を知らない！`;
+        return skill.execute(actor, target);
       }
       default:
         return "";
@@ -28,14 +32,6 @@ export class BattleManager {
   enemyTurn(): string {
     const actions: Character["state"][] = ["attack", "defend"];
     const action = actions[Math.floor(Math.random() * actions.length)];
-    this.enemy.state = action;
-    switch (action) {
-      case "attack":
-        return this.visitor.visitAttack(this.enemy, this.player);
-      case "defend":
-        return this.visitor.visitDefend(this.enemy);
-      default:
-        return "";
-    }
+    return this.act(this.enemy, this.player, action);
   }
 }
