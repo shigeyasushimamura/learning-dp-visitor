@@ -1,5 +1,5 @@
 import { ICharacter, Visitor } from "./Character";
-import { ICombatRole } from "./characterContext";
+import { ICombatRole } from "./CharacterContext";
 
 export class BattleManager {
   constructor(

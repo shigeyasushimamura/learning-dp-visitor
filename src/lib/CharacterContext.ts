@@ -1,7 +1,12 @@
 import { ICombatStatusEffect, ISkill } from "./Character";
 export interface Role {}
 
-export class CharacterContext {
+export interface ICharacterContext {
+  addRole(key: string, role: Role): void;
+  getRole<T extends Role>(key: string): T | undefined;
+}
+
+export class CharacterContext implements ICharacterContext {
   private roles: Map<string, Role> = new Map();
 
   addRole(key: string, role: Role): void {

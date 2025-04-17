@@ -1,10 +1,10 @@
-import { CharacterContext } from "./characterContext";
+import { ICharacterContext } from "./CharacterContext";
 export interface ICharacter {
   name: string;
   hp: number;
   maxHp: number;
-  getContext(): CharacterContext | undefined;
-  setContext(context: CharacterContext): void;
+  getContext(): ICharacterContext | undefined;
+  setContext(context: ICharacterContext): void;
 }
 
 export interface Visitor {
@@ -17,14 +17,14 @@ export class Character implements Character {
     public name: string,
     public hp: number,
     public maxHp: number,
-    private context?: CharacterContext
+    private context?: ICharacterContext
   ) {}
 
-  getContext(): CharacterContext | undefined {
+  getContext(): ICharacterContext | undefined {
     return this.context;
   }
 
-  setContext(context: CharacterContext): void {
+  setContext(context: ICharacterContext): void {
     this.context = context;
   }
 }

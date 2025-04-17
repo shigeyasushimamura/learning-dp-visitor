@@ -5,7 +5,7 @@ import {
   CharacterContext,
   CombatCharacterModule,
   ICombatRole,
-} from "../lib/characterContext";
+} from "../lib/CharacterContext";
 import { BattleManager } from "../lib/BattleManager";
 import { healingSkill } from "../lib/skill";
 
