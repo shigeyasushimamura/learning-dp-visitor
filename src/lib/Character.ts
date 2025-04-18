@@ -12,7 +12,7 @@ export interface Visitor {
   visitDefend(character: ICharacter): string;
 }
 
-export class Character implements Character {
+export class Character implements ICharacter {
   constructor(
     public name: string,
     public hp: number,
