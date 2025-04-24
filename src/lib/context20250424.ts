@@ -10,6 +10,42 @@ export interface GameContext {
   getEnvironment(): { timeOfDay: string; isRaining: boolean };
 }
 
+export type TaskState = "idle" | "running" | "paused" | "done" | "canceled";
+
+// 状態ありタスク
+export interface StatefulTask {
+  state: TaskState;
+  tick(dt: number): Promise<void> | void;
+  isBlocking(): boolean;
+}
+
+// 状態ありタスクの実装例
+export class CastFireball implements StatefulTask {
+  state: TaskState = "idle";
+  private t = 0;
+  constructor(private castTime = 2, private cool = 1) {}
+  isBlocking(): boolean {
+    return true;
+  }
+  tick(dt: number): Promise<void> | void {
+    if (this.state === "idle") {
+      this.state = "running";
+    }
+    if (this.state === "running") {
+      this.t += dt;
+      if (this.t >= this.castTime) {
+        console.log("🔥Fireball!");
+        this.state = "paused";
+        this.t = 0;
+      }
+    } else if (this.state === "paused") {
+      this.t += dt;
+      if (this.t >= this.cool) this.state = "done";
+    }
+  }
+}
+
+// 簡易タスク
 export interface Task {
   execute(): Promise<void> | void;
   isBlocking(): boolean;
@@ -48,6 +84,24 @@ export class TaskQueue {
   }
 }
 
+// 状態ありタスク用のスケジューラ
+export class TaskScheduler {
+  private q: StatefulTask[] = [];
+  push(t: StatefulTask) {
+    this.q.push(t);
+  }
+
+  async update(dt: number) {
+    const cur = this.q[0];
+    if (!cur) return;
+
+    await cur.tick(dt);
+    if (cur.state === "done") this.q.shift();
+    else if (cur.state === "paused" && !cur.isBlocking) {
+    }
+  }
+}
+
 // context
 export interface IMemory {
   getHostility(id: string): number;
@@ -60,6 +114,7 @@ export interface IHabit {
   bias(v: number): number;
 }
 export interface IRole {
+  roles: Set<string>;
   has(role: string): boolean;
 }
 export interface IStatus {
