@@ -12,11 +12,14 @@ export interface GameContext {
 
 export type TaskState = "idle" | "running" | "paused" | "done" | "canceled";
 
+interface BaseTask {
+  isBlocking(): boolean;
+}
+
 // 状態ありタスク
-export interface StatefulTask {
+export interface StatefulTask extends BaseTask {
   state: TaskState;
   tick(dt: number): Promise<void> | void;
-  isBlocking(): boolean;
 }
 
 // 状態ありタスクの実装例
@@ -46,9 +49,8 @@ export class CastFireball implements StatefulTask {
 }
 
 // 簡易タスク
-export interface Task {
+export interface Task extends BaseTask {
   execute(): Promise<void> | void;
-  isBlocking(): boolean;
 }
 
 export class SyncTask implements Task {
