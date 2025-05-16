@@ -1,5 +1,10 @@
 import { ICharacterContext } from "./CharacterContext";
-export interface ICharacter {
+
+export interface IEntiry {
+  id: string;
+}
+
+export interface ICharacter extends IEntiry {
   name: string;
   hp: number;
   maxHp: number;
