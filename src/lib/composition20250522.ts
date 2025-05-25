@@ -27,3 +27,36 @@ class Character {
     this.statusEffects.push(effect);
   }
 }
+
+// 以下decoratorのサンプル
+// IFの分離を使えば、上手く特定分野のdecoratorを実装できる。
+// 例えばPlayerに戦闘用や、会話用のIFを結合して持たせることが出来れば、それぞれに対してdecoratorができるし、
+// 戦闘用のdecoratorが他の分野を侵害する危険性がない
+interface CombatStats {
+  getAttack(): number;
+  getDefense(): number;
+}
+
+interface CharacterInfo {
+  getName(): string;
+}
+
+interface Player extends CombatStats, CharacterInfo {}
+
+abstract class StatModifierDecorator implements CombatStats {
+  constructor(protected base: CombatStats) {}
+
+  getAttack(): number {
+    return this.base.getAttack();
+  }
+
+  getDefense(): number {
+    return this.base.getDefense();
+  }
+}
+
+class SwordItem extends StatModifierDecorator {
+  override getAttack(): number {
+    return super.getAttack() + 5;
+  }
+}
