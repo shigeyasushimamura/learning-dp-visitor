@@ -1,5 +1,5 @@
 interface Command {
-  execute(): void;
+  execute(): number;
   undo(): void;
 }
 
