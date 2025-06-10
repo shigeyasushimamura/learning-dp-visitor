@@ -84,7 +84,7 @@ class Miner extends BaseGameEntity {
 
 type location_type = "goldmine";
 
-class EnterMineAndDigForNugget extends State {
+class EnterMineAndDigForNugget extends State<Miner> {
   private static instance: EnterMineAndDigForNugget;
 
   private constructor() {
@@ -125,7 +125,7 @@ class EnterMineAndDigForNugget extends State {
   }
 }
 
-class QuenchThirst extends State {
+class QuenchThirst extends State<Miner> {
   private static instance: QuenchThirst;
 
   private constructor() {
@@ -144,7 +144,7 @@ class QuenchThirst extends State {
   Exit(e: Miner): void {}
 }
 
-class VisitBankAndDepositGold extends State {
+class VisitBankAndDepositGold extends State<Miner> {
   private static instance: VisitBankAndDepositGold;
 
   private constructor() {
@@ -163,4 +163,80 @@ class VisitBankAndDepositGold extends State {
 
   Execute(e: Miner): void {}
   Exit(e: Miner): void {}
+}
+
+export class Telegram {
+  constructor(
+    public Sender: number,
+    public Receiver: number,
+    public Msg: number,
+    public DispatchTime: number,
+    public ExtraInfo: any
+  ) {}
+}
+
+enum Message_Type {
+  Msg_HiHoney_ImHome,
+  Msg_StewReady,
+}
+
+// EntityのIDを管理
+export class EntityManager {
+  private static instance: EntityManager;
+  private EntityMap: Map<number, BaseGameEntity> = new Map();
+
+  static Instance() {
+    if (!EntityManager.instance) {
+      EntityManager.instance = new EntityManager();
+    }
+    return EntityManager.instance;
+  }
+  RegisterEntity(NewEntity: BaseGameEntity) {
+    EntityManager.instance.EntityMap.set(NewEntity.getID(), NewEntity);
+  }
+  GetEntityFromID(id: number) {
+    return EntityManager.instance.EntityMap.get(id);
+  }
+  RemoveEntity(pEntity: BaseGameEntity) {
+    EntityManager.instance.EntityMap.delete(pEntity.getID());
+  }
+}
+
+// メッセージの生成・送信を管理
+export class MessageDispatcher {
+  private static instance: MessageDispatcher;
+  PriorityQ: Array<Telegram> = new Array();
+
+  static Instance() {
+    if (!MessageDispatcher.instance) {
+      MessageDispatcher.instance = new MessageDispatcher();
+    }
+    return MessageDispatcher.instance;
+  }
+
+  Discharge(pReceiver: BaseGameEntity, msg: Telegram) {}
+
+  DispatchMessage(
+    delay: number,
+    sender: number,
+    receiver: number,
+    msg: number,
+    ExtraInfo: any
+  ) {
+    const EntityMgr = EntityManager.Instance();
+    const pReceiver = EntityMgr.GetEntityFromID(receiver);
+    const telegram = new Telegram(sender, receiver, msg, delay, ExtraInfo);
+
+    if (!pReceiver) return;
+
+    if (delay <= 0) {
+      this.Discharge(pReceiver, telegram);
+    } else {
+      const crrTime = Date.now();
+      telegram.DispatchTime = delay + crrTime;
+      this.PriorityQ.push(telegram);
+    }
+  }
+
+  DispatchDelayedMessages() {}
 }
